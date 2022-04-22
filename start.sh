@@ -1,2 +1,2 @@
-docker build --tag deephaven-examples/tensorflow-sentiment-analysis .
+docker build --tag deephaven-examples/scikit-learn-creditcard-fraud-detection .
 docker compose up --build

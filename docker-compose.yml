@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   server:
-    image: deephaven-examples/tensorflow-sentiment-analysis:latest
+    image: deephaven-examples/scikit-learn-creditcard-fraud-detection:latest
     expose:
       - '8080'
     volumes:
