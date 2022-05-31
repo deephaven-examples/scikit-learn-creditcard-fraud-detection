@@ -1,7 +1,7 @@
 # Deephaven imports
-from deephaven import dataFrameToTable, tableToDataFrame
+from deephaven.pandas import to_table, to_pandas
+from deephaven.plot import Figure
 from deephaven import read_csv
-from deephaven import Plot
 
 # Python imports
 from sklearn.neighbors import KDTree as kdtree
@@ -32,10 +32,10 @@ def plot_valid_vs_fraud(col_name):
 
     # Create a fancy histogram plot
     valid_vs_fraud = \
-        Plot\
-        .histPlot(valid_label, creditcard.where(valid_string), col_name, num_valid_bins)\
-        .twinX()\
-        .histPlot(fraud_label, creditcard.where(fraud_string), col_name, num_valid_bins)\
+        Figure()\
+        .plot_xy_hist(series_name=valid_label, t=creditcard.where(valid_string), x=col_name, nbins=num_valid_bins)\
+        .x_twin()\
+        .plot_xy_hist(series_name=fraud_label, t=creditcard.where(fraud_string), x=col_name, nbins=num_valid_bins)\
         .show()
     return valid_vs_fraud
 
@@ -43,12 +43,12 @@ valid_vs_fraud_V4 = plot_valid_vs_fraud("V4")
 valid_vs_fraud_V12 = plot_valid_vs_fraud("V12")
 valid_vs_fraud_V14 = plot_valid_vs_fraud("V14")
 
-creditcard = creditcard.select("Time", "V4", "V12", "V14", "Amount", "Class")
-train_data = creditcard.where("Time >= 43200 && Time < 57600")
-test_data = tableToDataFrame(creditcard.where("Time >= 129600 && Time < 144000"))
+creditcard = creditcard.select(["Time", "V4", "V12", "V14", "Amount", "Class"])
+train_data = creditcard.where(["Time >= 43200 && Time < 57600"])
+test_data = to_pandas(creditcard.where(["Time >= 129600 && Time < 144000"]))
 
 # Turn the training data into a Pandas DataFrame
-data = tableToDataFrame(train_data.select("V4", "V12", "V14")).values
+data = to_pandas(train_data.select(["V4", "V12", "V14"])).values
 
 # Get nearest neighbor distances using a K-d tree
 tree = kdtree(data)
@@ -61,8 +61,7 @@ x = np.array(range(len(neighbor_dists)))
 
 # Turn our x and y (sorted neighbor distances) into a Deephaven table
 nn_dists = pd.DataFrame({"X": x, "Y": neighbor_dists})
-nn_dists = dataFrameToTable(nn_dists)
+nn_dists = to_table(nn_dists)
 
 # Plot the last few hundred points so we can see the "elbow"
-neighbor_dists = Plot.plot("Nearest neighbor distance", nn_dists.where("X > 30000"), "X", "Y").show()
-
+neighbor_dists = Figure().plot_xy(series_name="Nearest neighbor distance", t=nn_dists.where("X > 30000"), x="X", y="Y").show()
